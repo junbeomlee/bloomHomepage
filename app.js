@@ -16,6 +16,8 @@ db.once('open', function (callback) {
 	console.log("bd is connected");
 });
 
+app.use(express.static(__dirname+'/views'));
+
 app.use(morgan('combined'));
 app.use(bodyParser.json())
 app.use(cookieParser());
@@ -28,11 +30,7 @@ app.use(session({
 		ttl: 2*24*60*60
 	})
 }));
-
-
 //define
-
-
 
 require('./route.js').route(app);
 
