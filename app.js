@@ -5,8 +5,10 @@ var cookieParser = require('cookie-parser');
 var mongoose = require('mongoose');
 var session = require('express-session');
 var mongoStore = require('connect-mongo')(session);
+var sessionConf = require('./properties/sessionConf.js');
 var app = express();
 
+console.log(sessionConf.sessionKey);
 mongoose.connect('mongodb://maden.kr/bloom');
 
 var db = mongoose.connection;
@@ -16,23 +18,27 @@ db.once('open', function (callback) {
 	console.log("bd is connected");
 });
 
-app.use(express.static(__dirname+'/views'));
 
+app.use(express.static(__dirname+'/views'));
+app.set("sessionConf",sessionConf.sessionKey);
 app.use(morgan('combined'));
 app.use(bodyParser.json())
 app.use(cookieParser());
 app.use(session({
-	secret: 'anyStringToEncrypt',
-	saveUninitialized: true,
-	resave :true,
-	store: new mongoStore({
-		mongooseConnection: db,
-		ttl: 2*24*60*60
-	})
+		secret: 'anyStringToEncrypt',
+		saveUninitialized: true,
+		resave :true,
+		store: new mongoStore({
+			mongooseConnection: db,
+			ttl: 2*24*60*60
+		})
 }));
-//define
 
-require('./route.js').route(app);
+require('./routes/route.js').route(app);
+
+var auth = express.Router();
+require('./routes/auth.js').route(auth);
+app.use('/auth',auth);
 
 app.listen(7777,function(){
 	console.log('asd');
